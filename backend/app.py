@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from models import db, Item, Board
+from models import db, Item, Board, Users
 from flask_cors import CORS
 import os
 import psycopg2
@@ -13,7 +13,8 @@ CORS(app)  # Allow cross-origin requests from frontend
 app.config['SECRET_KEY'] = 'your_secret_key'
 
 # PostgreSQL connection
-app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@db:5432/{os.getenv('DB_NAME')}"
+app.config[
+    'SQLALCHEMY_DATABASE_URI'] = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@db:5432/{os.getenv('DB_NAME')}"
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{'user'}:{'password'}@localhost:6432/{'mydb'}"
 
@@ -21,30 +22,19 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 
+
 # Initialize database
 @app.before_first_request
 def create_tables():
     db.create_all()
 
-# API to fetch all items
-@app.route('/items', methods=['GET'])
-def get_items():
-    items = Item.query.all()
-    return jsonify([{'id': item.id, 'name': item.name} for item in items])
 
+# API to fetch all items
 @app.route('/boards', methods=['GET'])
 def get_boards():
     boards = Board.query.all()
     return jsonify([{'id': board.id, 'ssid': board.ssid, 'url': board.url} for board in boards])
 
-# API to add a new item
-@app.route('/items', methods=['POST'])
-def add_item():
-    data = request.json
-    new_item = Item(name=data['name'])
-    db.session.add(new_item)
-    db.session.commit()
-    return jsonify({'id': new_item.id, 'name': new_item.name})
 
 @app.route('/boards', methods=['POST'])
 def add_boards():
@@ -57,14 +47,6 @@ def add_boards():
     db.session.commit()
     return jsonify({'id': new_board.id, 'ssid': new_board.ssid, 'url': new_board.url})
 
-# API to delete an item
-@app.route('/items/<int:id>', methods=['DELETE'])
-def delete_item(id):
-    item = Item.query.get(id)
-    if item:
-        db.session.delete(item)
-        db.session.commit()
-    return '', 204
 
 @app.route('/boards/<int:id>', methods=['DELETE'])
 def delete_board(id):
@@ -74,11 +56,40 @@ def delete_board(id):
         db.session.commit()
     return '', 204
 
+
 @app.route('/boards/<int:id>', methods=['GET'])
 def activate_board(id):
     board = Board.query.get(id)
     if board:
         print(f"Opening gate at url: {board.url}")
+    return '', 204
+
+
+# -------------------
+@app.route('/users', methods=['GET'])
+def get_users():
+    users = Users.query.all()
+    return jsonify([{'id': user.id, 'nationalityId': user.nationalityId, 'firstName': user.firstName,
+                     'lastName': user.lastName, 'email': user.email} for user in users])
+
+
+@app.route('/users', methods=['POST'])
+def add_users():
+    data = request.json
+    new_user = Users(nationalityId=data['nationalityId'], firstName=data['firstName'], lastName=data['lastName'],
+                     email=data['email'])
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({'id': new_user.id, 'nationalityId': new_user.nationalityId, 'firstName': new_user.firstName,
+                    'lastName': new_user.lastName, 'email': new_user.email})
+
+
+@app.route('/users/<int:id>', methods=['DELETE'])
+def delete_user(id):
+    user = Users.query.get(id)
+    if user:
+        db.session.delete(user)
+        db.session.commit()
     return '', 204
 
 
