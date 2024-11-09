@@ -8,6 +8,7 @@ import WelcomePage from './pages/WelcomePage';
 // import UsersPage from './pages/UserPage';
 // import ProductsPage from './pages/ProductPage';
 import BoardPage from './pages/BoardPage';
+import UserPage from './pages/UserPage';
 
 const apiUrl = 'http://localhost:5000/items';
 
@@ -22,7 +23,7 @@ function App() {
     //   </Routes>
     // </Router>
     <div>
-    <BoardPage />
+    <UserPage />
   </div>
   );
 }
